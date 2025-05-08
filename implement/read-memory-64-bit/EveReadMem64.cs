@@ -786,12 +786,25 @@ namespace read_memory_64_bit
 
                 var childrenDictEntry = dictEntriesOfInterest.FirstOrDefault(entry => entry.key == "children");
 
-                if (childrenDictEntry == null)
+                if (childrenDictEntry?.value == null)
                     return null;
 
-                var childrenEntryObjectAddress =
-                ((UITreeNode.DictEntryValueGenericRepresentation)childrenDictEntry.value).address;
+                ulong childrenEntryObjectAddress = 0;
+                try
+                {
+                    childrenEntryObjectAddress = ((UITreeNode.DictEntryValueGenericRepresentation)childrenDictEntry.value).address;
+                }
+                catch
+                {
+                    return null;
+                }
 
+                if (childrenEntryObjectAddress == 0)
+                {
+                    return null;
+                }
+
+                //  Console.WriteLine($"Failed to cast childrenEntryObjectAddress for 0x{nodeAddress:X}.");
                 //  Console.WriteLine($"'children' dict entry of 0x{nodeAddress:X} points to 0x{childrenEntryObjectAddress:X}.");
 
                 var pyChildrenListMemory = memoryReader.ReadBytes(childrenEntryObjectAddress, 0x18);
